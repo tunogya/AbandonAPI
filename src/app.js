@@ -2,6 +2,8 @@ const serverless = require("serverless-http");
 const express = require("express");
 const {auth} = require("express-oauth2-jwt-bearer");
 const cors = require("cors");
+const helmet = require('helmet');
+const compression = require('compression')
 
 const app = express();
 
@@ -13,6 +15,8 @@ const jwtCheck = auth({
 
 app.use(jwtCheck);
 app.use(cors());
+app.use(helmet());
+app.use(compression())
 
 app.get("/", (req, res, next) => {
   return res.status(200).json({
