@@ -25,8 +25,12 @@ app.get("/", (req, res, next) => {
   });
 });
 
-app.get('/status', (req, res) => { res.status(200).end(); });
-app.head('/status', (req, res) => { res.status(200).end(); });
+app.get('/status', (req, res) => {
+  res.status(200).end();
+});
+app.head('/status', (req, res) => {
+  res.status(200).end();
+});
 
 app.get('/balance', (req, res) => {
   const auth = req.auth;
