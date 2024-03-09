@@ -1,6 +1,8 @@
 const serverless = require("serverless-http");
 const express = require("express");
-const { auth } = require('express-oauth2-jwt-bearer');
+const {auth} = require("express-oauth2-jwt-bearer");
+const cors = require("cors");
+
 const app = express();
 
 const jwtCheck = auth({
@@ -10,6 +12,7 @@ const jwtCheck = auth({
 });
 
 app.use(jwtCheck);
+app.use(cors());
 
 app.get("/", (req, res, next) => {
   return res.status(200).json({
@@ -17,11 +20,8 @@ app.get("/", (req, res, next) => {
   });
 });
 
-app.get("/path", (req, res, next) => {
-  return res.status(200).json({
-    message: "Hello from path!",
-  });
-});
+app.get('/status', (req, res) => { res.status(200).end(); });
+app.head('/status', (req, res) => { res.status(200).end(); });
 
 app.use((req, res, next) => {
   return res.status(404).json({
