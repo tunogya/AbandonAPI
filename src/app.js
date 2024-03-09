@@ -27,6 +27,18 @@ app.get("/", (req, res, next) => {
 app.get('/status', (req, res) => { res.status(200).end(); });
 app.head('/status', (req, res) => { res.status(200).end(); });
 
+app.get('/balance', (req, res) => {
+  return res.status(200).json({
+    message: "Hello from balance!",
+  });
+})
+
+app.get('/balance_transactions', (req, res) => {
+  return res.status(200).json({
+    message: "Hello from balance_transactions!",
+  });
+})
+
 app.use((req, res, next) => {
   return res.status(404).json({
     error: "Not Found",
