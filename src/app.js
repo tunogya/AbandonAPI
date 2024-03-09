@@ -3,13 +3,14 @@ const express = require("express");
 const {auth} = require("express-oauth2-jwt-bearer");
 const cors = require("cors");
 const helmet = require('helmet');
-const compression = require('compression')
+const compression = require('compression');
+const config = require('./config');
 
 const app = express();
 
 const jwtCheck = auth({
-  audience: 'https://api.abandon.ai',
-  issuerBaseURL: 'https://abandon.jp.auth0.com/',
+  audience: config.auth0.audience,
+  issuerBaseURL: config.auth0.issuerBaseURL,
   tokenSigningAlg: 'RS256'
 });
 
@@ -28,6 +29,10 @@ app.get('/status', (req, res) => { res.status(200).end(); });
 app.head('/status', (req, res) => { res.status(200).end(); });
 
 app.get('/balance', (req, res) => {
+  const auth = req.auth;
+  auth.header; // The decoded JWT header.
+  auth.payload; // The decoded JWT payload.
+  auth.token; // The raw JWT token.
   return res.status(200).json({
     message: "Hello from balance!",
   });
