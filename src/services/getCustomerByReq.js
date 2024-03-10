@@ -1,4 +1,4 @@
-const stripeClient = require("../config/stripeClient");
+const stripe = require("../config/stripe");
 const userInfoClient = require("../config/userInfoClient");
 const {Redis} = require("@upstash/redis");
 
@@ -12,17 +12,17 @@ const getCustomerByReq = async (req) => {
   
   const cid = await redis.get(`subToCid:${sub}`);
   if (cid) {
-    customer = await stripeClient.customers.retrieve(cid);
+    customer = await stripe.customers.retrieve(cid);
   } else {
     const {data} = await userInfoClient.getUserInfo(token)
     const email = data.email;
-    const customers = await stripeClient.customers.list({
+    const customers = await stripe.customers.list({
       email: email,
     });
     if (customers.data.length > 0) {
       customer = customers.data[0];
     } else {
-      customer = await stripeClient.customers.create({
+      customer = await stripe.customers.create({
         email: email,
         metadata: {
           id: sub,

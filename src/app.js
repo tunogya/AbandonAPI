@@ -52,6 +52,8 @@ app.get('/balance', async (req, res) => {
 app.get('/balance_transactions', async (req, res) => {
   const customer = await getCustomerByReq(req);
   
+  
+  
   return res.status(200).json({
     message: "Hello from balance_transactions!",
   });
