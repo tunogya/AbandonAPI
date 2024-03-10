@@ -37,6 +37,11 @@ app.head('/status', (req, res) => {
 
 app.get('/balance', async (req, res) => {
   const customer = await getCustomerByReq(req);
+  if (!customer?.id) {
+    return res.status(404).json({
+      error: "Not Found",
+    })
+  }
   
   return res.status(200).json({
     object: "balance",
