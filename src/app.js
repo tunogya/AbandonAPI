@@ -6,6 +6,7 @@ const helmet = require('helmet');
 const compression = require('compression');
 const config = require('./config');
 const getCustomerByReq = require("./services/getCustomerByReq");
+const stripe = require("./config/stripe");
 
 const app = express();
 
@@ -50,12 +51,36 @@ app.get('/balance', async (req, res) => {
 })
 
 app.get('/balance_transactions', async (req, res) => {
+  const limit = req.query.limit || 100;
+  const starting_after = req.query.starting_after || undefined;
+  const ending_before = req.query.ending_before || undefined;
+  
   const customer = await getCustomerByReq(req);
+  if (!customer?.id) {
+    return res.status(404).json({
+      error: "Not Found",
+    })
+  }
   
-  
+  const balanceTransactions = await stripe.customers.listBalanceTransactions(customer.id,{
+    limit: limit,
+    starting_after: starting_after,
+    ending_before: ending_before,
+  });
   
   return res.status(200).json({
-    message: "Hello from balance_transactions!",
+    object: balanceTransactions.object,
+    has_more: balanceTransactions.has_more,
+    data: balanceTransactions.data.map((item) => ({
+      id: item.id,
+      object: 'balance_transaction',
+      amount: item.amount * -1,
+      created: item.created,
+      currency: item.currency === 'usd' ? 'aai' : item.currency,
+      description: item.description,
+      ending_balance: item?.ending_balance ? item.ending_balance * -1 : 0,
+      metadata: item?.metadata || {},
+    })),
   });
 })
 
