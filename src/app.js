@@ -5,11 +5,7 @@ const cors = require("cors");
 const helmet = require('helmet');
 const compression = require('compression');
 const config = require('./config');
-const userInfoClient = require('./config/userInfoClient');
-const stripeClient = require('./config/stripeClient');
-const {Redis} = require("@upstash/redis");
-
-const redis = Redis.fromEnv();
+const getCustomerByReq = require("./services/getCustomerByReq");
 
 const app = express();
 
@@ -39,36 +35,7 @@ app.head('/status', (req, res) => {
 });
 
 app.get('/balance', async (req, res) => {
-  const auth = req.auth;
-  const sub = auth.payload.sub;
-  const token = auth.token;
-  let customer;
-  
-  const cid = await redis.get(`subToCid:${sub}`);
-  if (cid) {
-    customer = await stripeClient.customers.retrieve(cid);
-  } else {
-    const {data} = await userInfoClient.getUserInfo(token)
-    const email = data.email;
-    const customers = await stripeClient.customers.list({
-      email: email,
-    });
-    if (customers.data.length > 0) {
-      customer = customers.data[0];
-    } else {
-      customer = await stripeClient.customers.create({
-        email: email,
-        metadata: {
-          id: sub,
-        },
-        balance: {
-          amount: 0,
-          currency: 'usd',
-        }
-      });
-    }
-    await redis.set(`subToCid:${sub}`, customer.id);
-  }
+  const customer = await getCustomerByReq(req);
   
   return res.status(200).json({
     object: "balance",
@@ -82,7 +49,9 @@ app.get('/balance', async (req, res) => {
   });
 })
 
-app.get('/balance_transactions', (req, res) => {
+app.get('/balance_transactions', async (req, res) => {
+  const customer = await getCustomerByReq(req);
+  
   return res.status(200).json({
     message: "Hello from balance_transactions!",
   });
