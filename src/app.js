@@ -7,6 +7,7 @@ const compression = require('compression');
 const config = require('./config');
 const getCustomerByReq = require("./services/getCustomerByReq");
 const stripe = require("./config/stripe");
+const {getSuspenseDataBy1D} = require("./services/getSuspenseData");
 
 const app = express();
 
@@ -87,6 +88,27 @@ app.get('/balance_transactions', async (req, res) => {
       metadata: item?.metadata || {},
     })),
   });
+})
+
+app.get('/suspense', async (req, res) => {
+  const from = req.query.from || undefined;
+  const to = req.query.to || undefined;
+  const resolution = req.query.resolution || "1D";
+  
+  const customer = await getCustomerByReq(req);
+  
+  if (!customer?.id) {
+    return res.status(404).json({
+      error: "Not Found",
+    })
+  }
+  
+  if (resolution === '1D') {
+    const data = await getSuspenseDataBy1D(customer.id, from, to);
+    return res.status(200).json(data)
+  } else {
+    return res.status(404).json([])
+  }
 })
 
 app.use((req, res, next) => {
