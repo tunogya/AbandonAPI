@@ -20,7 +20,7 @@ const jwtCheck = auth({
 app.use(jwtCheck);
 app.use(cors());
 app.use(helmet());
-app.use(compression())
+app.use(compression());
 
 app.get("/", (req, res, next) => {
   return res.status(200).json({
@@ -109,6 +109,33 @@ app.get('/suspense', async (req, res) => {
   } else {
     return res.status(404).json([])
   }
+})
+
+app.post('/payment-sheet', async (req, res) => {
+  // get amount from body
+  const amount = req.body.amount;
+  const currency = req.body.currency;
+  const customer = await getCustomerByReq(req);
+  if (!customer?.id) {
+    return res.status(404).json({
+      error: "Not Found",
+    })
+  }
+  const ephemeralKey = await stripe.ephemeralKeys.create(
+      {customer: customer.id},
+      {apiVersion: '2023-10-16'}
+  );
+  const paymentIntent = await stripe.paymentIntents.create({
+    amount: amount,
+    currency: currency,
+    customer: customer.id,
+  });
+  res.json({
+    paymentIntent: paymentIntent.client_secret,
+    ephemeralKey: ephemeralKey.secret,
+    customer: customer.id,
+    publishableKey: config.stripe.publishableKey,
+  });
 })
 
 app.use((req, res, next) => {

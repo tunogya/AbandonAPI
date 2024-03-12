@@ -12,6 +12,9 @@ module.exports = {
     uri: process.env.MONGODB_URI
   },
   stripe: {
-    secret: process.env.STRIPE_SECRET_KEY
+    secretKey: process.env.STRIPE_SECRET_KEY,
+    publishableKey: process.env.STRIPE_PUBLISHABLE_KEY,
+    urlScheme: process.env.STRIPE_URL_SCHEME,
+    merchantId: process.env.STRIPE_MERCHANT_ID,
   },
 }
