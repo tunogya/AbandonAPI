@@ -91,8 +91,11 @@ app.get('/balance_transactions', async (req, res) => {
 })
 
 app.get('/suspense', async (req, res) => {
-  const from = req.query.from || undefined;
-  const to = req.query.to || undefined;
+  let _6ago = new Date();
+  _6ago.setDate(_6ago.getDate() - 6);
+  
+  const from = req.query.from ? new Date(req.query.from) : _6ago;
+  const to = req.query.to ? new Date(req.query.to) : new Date();
   const resolution = req.query.resolution || "1D";
   
   const customer = await getCustomerByReq(req);
