@@ -10,6 +10,7 @@ const stripe = require("./config/stripe");
 const {getSuspenseDataBy1D} = require("./services/getSuspenseData");
 const {Redis} = require("@upstash/redis");
 const {deleteAuth0User} = require("./services/deleteAuth0User");
+const mongodb = require("./config/mongodb");
 
 const app = express();
 
@@ -119,7 +120,6 @@ app.get('/suspense', async (req, res) => {
 })
 
 app.post('/payment-sheet', async (req, res) => {
-  // get amount from body
   const amount = req.body.amount;
   const currency = req.body.currency;
   const customer = await getCustomerByReq(req);
@@ -155,6 +155,28 @@ app.delete('/unregister', async (req, res) => {
     await stripe.customers.del(customer.id);
   }
   await redis.del(`subToCid:${sub}`);
+  return res.status(200).end();
+})
+
+app.post('/app/config', async (req, res) => {
+  const auth = req.auth;
+  const sub = auth.payload.sub;
+  const config = req.body.config;
+  
+  await mongodb.db('core').collection('app_config').updateOne(
+    {
+      sub: sub,
+    },
+    {
+      $set: {
+        config: config,
+      },
+    },
+    {
+      upsert: true,
+    }
+  )
+  
   return res.status(200).end();
 })
 
