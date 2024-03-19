@@ -1,5 +1,5 @@
 const stripe = require("../config/stripe");
-const userInfoClient = require("../config/userInfoClient");
+const {userInfoClient} = require("../config/auth0Client");
 const {Redis} = require("@upstash/redis");
 
 const redis = Redis.fromEnv();

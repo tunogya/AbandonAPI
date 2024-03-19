@@ -8,8 +8,12 @@ const config = require('./config');
 const getCustomerByReq = require("./services/getCustomerByReq");
 const stripe = require("./config/stripe");
 const {getSuspenseDataBy1D} = require("./services/getSuspenseData");
+const {Redis} = require("@upstash/redis");
+const {deleteAuth0User} = require("./services/deleteAuth0User");
 
 const app = express();
+
+const redis = Redis.fromEnv();
 
 const jwtCheck = auth({
   audience: config.auth0.audience,
@@ -139,6 +143,19 @@ app.post('/payment-sheet', async (req, res) => {
     customer: customer.id,
     publishableKey: config.stripe.publishableKey,
   });
+})
+
+app.delete('/unregister', async (req, res) => {
+  const customer = await getCustomerByReq(req);
+  const auth = req.auth;
+  const sub = auth.payload.sub;
+  
+  await deleteAuth0User(sub);
+  if (customer.id) {
+    await stripe.customers.del(customer.id);
+  }
+  await redis.del(`subToCid:${sub}`);
+  return res.status(200).end();
 })
 
 app.use((req, res, next) => {
